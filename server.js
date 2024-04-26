@@ -43,7 +43,6 @@ app.post('/user-tasks', async (req, res) => {
         // Is it new-date or old-date ?
         const oldT = existinguser.userTasks.findIndex(t => t.date === req.body.date)
         if(oldT === -1) { // new date
-            console.log(oldT)
             const oldTask = existinguser.userTasks.map(t => t) // returns prev tasks
             const newTask = {
                 date: req.body.date,
@@ -53,12 +52,11 @@ app.post('/user-tasks', async (req, res) => {
             payload = {
                 userTasks: [...oldTask, newTask]
             }
-            console.log(payload)
             // retain old-date and add new-date task
             const doc = await TaskTracker.findOneAndUpdate(filter, payload, opts) 
             doc.save();
         } else { 
-            console.log('same date updating')
+            // if same date
             const targetDate = req.body.date.split(' ')[0]
             // old-date [ date exists already ? ] => just update the old-date tasks
             const doc = await TaskTracker.findOneAndUpdate(
@@ -75,9 +73,7 @@ app.post('/user-tasks', async (req, res) => {
 app.post('/tasks', async (req, res) => {
     const existinguser = await TaskTracker.findOne({'userData.email': req.body.email})
     if(existinguser) {
-        // can refactor code
-        const doc = existinguser
-        return res.send(doc)
+        return res.send(existinguser)
     }
 })
 
