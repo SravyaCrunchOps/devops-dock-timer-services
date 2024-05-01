@@ -7,6 +7,9 @@ const config = {
     database: {
         mongoUrl: process.env.MONGODB_URL
     },
+    start: {
+    // "start": "node --require ./instrumentation.js index.js"
+    }
 }
 
 module.exports = config;

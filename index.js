@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const config = require('./config');
 const mongoose = require('mongoose');
+const logger = require('./logger/logger');
 const TaskTracker = require('./timerModel'); 
 const PORT = config.server.port;
 
@@ -37,6 +38,7 @@ app.post('/user-tasks', async (req, res) => {
         // const doc = await TaskTracker.findOneAndUpdate(filter, payload, opts) 
         const doc = await TaskTracker.create(payload)
         doc.save();
+        logger.info('New users - new task -> is saved in database')
     }
     // old user
     else {
@@ -55,6 +57,7 @@ app.post('/user-tasks', async (req, res) => {
             // retain old-date and add new-date task
             const doc = await TaskTracker.findOneAndUpdate(filter, payload, opts) 
             doc.save();
+            logger.info('Existing users - new task -> is saved in database')
         } else { 
             // if same date
             const targetDate = req.body.date.split(' ')[0]
@@ -65,6 +68,7 @@ app.post('/user-tasks', async (req, res) => {
                 {new: true}
             )
             doc.save();
+            logger.info('Existing user - same date tasks -> is saved in database')
         }
     }
     return res.send('submitted')
