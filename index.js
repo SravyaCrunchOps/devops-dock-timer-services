@@ -2,9 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const config = require('./config');
 const mongoose = require('mongoose');
-const logger = require('./logger/logger');
 const TaskTracker = require('./timerModel'); 
 const PORT = config.server.port;
+// const { logger, errLogger } = require('./logger/expressWinston');
+const logger = require('./logger/winstonLogger');
+// const morgan = require('morgan')
 
 const app = express();
 
@@ -14,10 +16,15 @@ const db = mongoose.connect(mongoUrl);
 
 // cors middleware
 app.use(express.json());
-app.use(cors({
-    origin: "http://localhost:3000",
-    methods: "GET,POST,PUT,DELETE",
-}));
+app.use(cors());
+
+
+// morgan middleware
+// app.use(morgan('combined', {stream: logger.stream}));
+app.use((req, res, next) => {
+    logger.info(req.originalUrl)
+    next()
+})
 
 // middlewares
 app.post('/user-tasks', async (req, res) => {
@@ -37,8 +44,8 @@ app.post('/user-tasks', async (req, res) => {
     if(!existinguser) {
         // const doc = await TaskTracker.findOneAndUpdate(filter, payload, opts) 
         const doc = await TaskTracker.create(payload)
-        doc.save();
         logger.info('New users - new task -> is saved in database')
+        doc.save();
     }
     // old user
     else {
@@ -56,8 +63,8 @@ app.post('/user-tasks', async (req, res) => {
             }
             // retain old-date and add new-date task
             const doc = await TaskTracker.findOneAndUpdate(filter, payload, opts) 
-            doc.save();
             logger.info('Existing users - new task -> is saved in database')
+            doc.save();
         } else { 
             // if same date
             const targetDate = req.body.date.split(' ')[0]
@@ -76,17 +83,20 @@ app.post('/user-tasks', async (req, res) => {
 
 app.post('/tasks', async (req, res) => {
     const existinguser = await TaskTracker.findOne({'userData.email': req.body.email})
+    if(!existinguser) {
+        logger.warn('Tasklist is not sent to client! Maybe email is wrong or please create new task')
+    }
     if(existinguser) {
         return res.send(existinguser)
     }
+    return;
 })
-
 
 
 if(db) {
     app.listen(PORT, (err, client) => {
         if(err) console.log(err.message)
-        console.log('server connected at PORT: ', PORT)
+        console.info('server connected at PORT: ', PORT)
         console.log('MongoDB database is connected.')
     });
 }

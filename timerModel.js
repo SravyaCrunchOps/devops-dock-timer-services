@@ -8,6 +8,6 @@ const timerSchema = mongoose.mongoose.Schema({
     userTasks: []
 });
 
-const Timer = mongoose.model('Task_Tracker', timerSchema);
+const Timer = mongoose.model('Task_Trackers', timerSchema);
 
 module.exports = Timer;
